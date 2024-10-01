@@ -40,7 +40,7 @@ class demotivator3Mod(loader.Module):
             return           
 
         chat = '@super_rjaka_demotivator_bot'
-        await message.edit('<b>Демотиватор от Вайнера</b>')
+        await message.edit('<b>Саша Гений</b>')
         async with message.client.conversation(chat) as conv:
             try:
                 response = conv.wait_event(events.NewMessage(incoming=True, from_users=1016409811))
