@@ -553,8 +553,8 @@ class ArtsMod(loader.Module):
 
 
 async def lu3cmd(self, message):
-        """Используй .l3."""
-        l3 =   ("☁️☁️☁️☁️☁️☁️☁️☁️☁️\n"
+        """Используй .loves."""
+        loves =   ("☁️☁️☁️☁️☁️☁️☁️☁️☁️\n"
                  "☁️☁️💗💗☁️💗💗☁️☁️\n"
                  "☁️💗💗💗💗💗💗💗☁️\n"
                  "☁️💗💗💗💗💗💗💗☁️\n"
@@ -563,11 +563,11 @@ async def lu3cmd(self, message):
                  "☁️☁️☁️💗💗💗☁️☁️☁️\n"
                  "☁️☁️☁️☁️💗☁️☁️☁️☁️\n"
                  "☁️☁️☁️☁️☁️☁️☁️☁️☁️")
-        await message.edit(l3)
+        await message.edit(loves)
 
 async def wowcmd(self, message):
-        """Используй .wow."""
-        wowcmd =   ("⣿⣆⠱⣝⡵⣝⢅⠙⣿⢕⢕⢕⢕⢝⣥⢒⠅⣿⣿⣿⡿⣳⣌⠪⡪⣡⢑\n"
+        """Используй .pow."""
+        powcmd =   ("⣿⣆⠱⣝⡵⣝⢅⠙⣿⢕⢕⢕⢕⢝⣥⢒⠅⣿⣿⣿⡿⣳⣌⠪⡪⣡⢑\n"
                     "⣿⣿⣦⠹⣳⣳⣕⢅⠈⢗⢕⢕⢕⢕⢕⢈⢆⠟⠋⠉⠁⠉⠉⠁⠈⠼⢐\n"
                     "⢰⣶⣶⣦⣝⢝⢕⢕⠅⡆⢕⢕⢕⢕⢕⣴⠏⣠⡶⠛⡉⡉⡛⢶⣦⡀⠐\n"
                     "⡄⢻⢟⣿⣿⣷⣕⣕⣅⣿⣔⣕⣵⣵⣿⣿⢠⣿⢠⣮⡈⣌⠨⠅⠹⣷⡀\n"
@@ -579,4 +579,4 @@ async def wowcmd(self, message):
                     "⢄⠻⣿⣟⠿⠦⠍⠉⣡⣾⣿⣿⣿⣿⣿⣿⢸⣿⣦⠙⣿⣿⣿⣿⣿⣿⣿\n"
                     "⡑⣑⣈⣻⢗⢟⢞⢝⣻⣿⣿⣿⣿⣿⣿⣿⠸⣿⠿⠃⣿⣿⣿⣿⣿⣿⡿\n"
                     "⡵⡈⢟⢕⢕⢕⢕⣵⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣶⣿⣿⣿⣿⣿⠿⠋⣀")
-        await message.edit(wow)   
+        await message.edit(pow)   
