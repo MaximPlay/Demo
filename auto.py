@@ -1,37 +1,52 @@
-task = None
+import asyncio
+import logging
+from .. import loader, utils
 
-@events.register(events.NewMessage(pattern=r'\.autol (\d+) (.+)'))
-async def autol_handler(event):
-    global task
-    if task:
-        await event.respond("Уже выполняется задача. Остановите её перед запуском новой.")
-        return
+logger = logging.getLogger(__name__)
 
-    # Извлечение интервала и текста из команды
-    interval_minutes = int(event.pattern_match.group(1))
-    text = event.pattern_match.group(2)
+def register(cb):
+    cb(AutoMessageMod())
 
-    # Функция для отправки сообщений
-    async def send_messages():
+class AutoMessageMod(loader.Module):
+    """Auto Message Sender"""
+    strings = {'name': 'AutoMessage'}
+
+    def __init__(self):
+        self.tasks = {}
+
+    async def autolcmd(self, message):
+        """Используй .autol <интервал в минутах> <текст>."""
+        args = utils.get_args_raw(message)
+        if not args:
+            await message.edit('<b>Нет аргументов после команды :c</b>')
+            return
+
+        try:
+            t, text = args.split(' ', 1)
+            t = int(t)
+        except ValueError:
+            await message.edit('<b>Неправильный формат аргументов :c</b>')
+            return
+
+        chat_id = message.chat_id
+        if chat_id in self.tasks:
+            await message.edit('<b>Уже выполняется задача для этого чата. Остановите её перед началом новой.</b>')
+            return
+
+        self.tasks[chat_id] = self.client.loop.create_task(self.send_message_periodically(chat_id, t, text))
+        await message.edit(f'<b>Сообщение будет отправляться каждые {t} минут(ы).</b>')
+
+    async def send_message_periodically(self, chat_id, interval, text):
         while True:
-            await event.client(SendMessageRequest(event.chat_id, text))
-            await asyncio.sleep(interval_minutes * 60)
+            await self.client.send_message(chat_id, text)
+            await asyncio.sleep(interval * 60)
 
-    # Запуск задачи
-    task = asyncio.create_task(send_messages())
-    await event.respond(f"Автоматическая отправка сообщений начата с интервалом {interval_minutes} минут.")
-
-@events.register(events.NewMessage(pattern=r'\.alstop'))
-async def alstop_handler(event):
-    global task
-    if task:
-        task.cancel()
-        task = None
-        await event.respond("Автоматическая отправка сообщений остановлена.")
-    else:
-        await event.respond("Нет активной задачи для остановки.")
-
-# Регистрация обработчиков
-def register_handlers(client):
-    client.add_event_handler(autol_handler)
-    client.add_event_handler(alstop_handler)
+    async def alstopcmd(self, message):
+        """Используй .alstop для остановки отправки сообщений."""
+        chat_id = message.chat_id
+        if chat_id in self.tasks:
+            self.tasks[chat_id].cancel()
+            del self.tasks[chat_id]
+            await message.edit('<b>Автоматическая отправка сообщений остановлена.</b>')
+        else:
+            await message.edit('<b>Нет активной задачи для этого чата.</b>')
