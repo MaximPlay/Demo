@@ -34,12 +34,12 @@ class AutoMessageMod(loader.Module):
             await message.edit('<b>Уже выполняется задача для этого чата. Остановите её перед началом новой.</b>')
             return
 
-        self.tasks[chat_id] = self.client.loop.create_task(self.send_message_periodically(chat_id, t, text))
+        self.tasks[chat_id] = self._client.loop.create_task(self.send_message_periodically(chat_id, t, text))
         await message.edit(f'<b>Сообщение будет отправляться каждые {t} минут(ы).</b>')
 
     async def send_message_periodically(self, chat_id, interval, text):
         while True:
-            await self.client.send_message(chat_id, text)
+            await self._client.send_message(chat_id, text)
             await asyncio.sleep(interval * 60)
 
     async def alstopcmd(self, message):
