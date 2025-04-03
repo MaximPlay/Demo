@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from telethon import events
 from .. import loader, utils
 
 logger = logging.getLogger(__name__)
