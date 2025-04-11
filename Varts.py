@@ -309,23 +309,6 @@ class ArtsMod(loader.Module):
         await message.edit(house)
 
 
-    async def waitcmd(self, message):
-        """Используй .wait."""
-        wait = ("В данный момент не могу ответить\n"
-               "Возможные причины:              \n"
-               "1)Покупатели.                   \n"
-               "2)Заняты руки.                  \n"
-               "В любом случае люблю и скучаю   \n"
-               "Отпишусь как освобожусь         \n"
-               "⠀─▄█▀█▄──▄███▄\n"
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"▐█░██████████▌\n"
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"─██▒█████████\n"
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"──▀████████▀\n"
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"─────▀██▀\n"
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"──────▀ ")
-        await message.edit(wait)
-
-
     async def coffeecmd(self, message):
         """Используй .coffee <текст>; ничего."""
         text = utils.get_args_raw(message)
