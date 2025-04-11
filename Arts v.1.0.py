@@ -506,23 +506,7 @@ class ArtsVagnera(loader.Module):
                                         "┃┏━━┫┏┫┃━┫━━┫━━┫┃┏━━┛\n"
                                         "┃┃╋╋┃┃┃┃━╋━━┣━━┃┃┃\n"
                                         "┗┛╋╋┗┛┗━━┻━━┻━━┛┗┛")
-        elif r == 5:
-            await utils.answer(message, "<code>FFFFFFFFFFFFFFFFFFFFFF\n"
-                                        "F::::::::::::::::::::F\n"
-                                        "F::::::::::::::::::::F\n"
-                                        "FF::::::FFFFFFFFF::::F\n"
-                                        "  F:::::F       FFFFFF\n"
-                                        "  F:::::F\n"
-                                        "  F::::::FFFFFFFFFF\n"
-                                        "  F:::::::::::::::F\n"
-                                        "  F:::::::::::::::F\n"
-                                        "  F::::::FFFFFFFFFF\n"
-                                        "  F:::::F\n"
-                                        "  F:::::F\n"
-                                        "FF:::::::FF\n"
-                                        "F::::::::FF\n"
-                                        "F::::::::FF\n"
-                                        "FFFFFFFFFFF</code>")
+    
         else:
             await utils.answer(message, "██████╗\n"
                                         "██╔═══╝\n"
