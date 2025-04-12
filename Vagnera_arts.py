@@ -10,7 +10,7 @@ def register(cb):
 
 class ArtsMod(loader.Module):
     """Vagnera арты"""
-    strings = {'name': 'VAGNERA ARTS 1.0'}
+    strings = {'name': 'VAGNERARTS1.0'}
 
     async def vjuhcmd(self, message):
         """Используй .vjuh <текст>."""
