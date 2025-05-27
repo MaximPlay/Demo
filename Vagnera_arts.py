@@ -540,10 +540,4 @@ class ArtsMod(loader.Module):
                "──▀████████▀\n"
                "─────▀██▀\n"
                "──────▀ ")
-        await message.edit(lana)       
-
-    async def lana2cmd(self, message):
-        """Используй .lu."""
-        lana2 = ("|  /\ |\ | /\ \n"
-              "|_/--\| \|/--\ ")
-        await message.edit(lana2)    
+        await message.edit(lana)          
