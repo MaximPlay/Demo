@@ -529,11 +529,9 @@ class ArtsMod(loader.Module):
                "──────▀ ")
         await message.edit(lu)    
 
-    async def lanacmd(self, message):
-        """Используй .lana."""
-        lana = ("Зайчик мой, сейчас не могу ответить\n"
-              "Отвечу как только освобожусь\n"
-              "Люблю тебя <3\n"
+    async def waitcmd(self, message):
+        """Используй .wait."""
+        lana = ("Жди ответа)) \n"
                "─▄█▀█▄──▄███▄\n"
                "▐█░██████████▌\n"
                "─██▒█████████\n"
