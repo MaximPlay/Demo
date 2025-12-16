@@ -6,7 +6,7 @@ import json
 API_URL = "https://api.gigachat.ai/v1/models/gigachat-general/inferences"
 
 def register(cb):
-    cb(GigaChatModule())
+    cb(GigaChatModule())  # Регистрация модуля
 
 class GigaChatModule(loader.Module):
     strings = {"name": "GenitzGPT"}
