@@ -65,7 +65,7 @@ class GigaChatMod(loader.Module):
         finally:
             # Удаляем временный файл
             os.remove(temp_path)
-        except aiohttp.ClientResponseError as err:
+        except aiohttp.ClientResponceError as err:
             await message.edit(f"<b>❌ Ошибка GigaChat ({err.status}): {err.message}</b>")
         except Exception as e:
             await message.edit(f"<b>❌ Произошла ошибка: {str(e)}</b>")
