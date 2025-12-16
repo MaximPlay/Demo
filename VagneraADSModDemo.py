@@ -45,25 +45,26 @@ class VagneraADSMod(loader.Module):
         if original_text.startswith(".a"):
             original_text = original_text[2:].strip()
             
-        # Используем ссылку по умолчанию, если пользователь не указал свою
-        if not args:
-            link = self.default_link
+        # Обрабатываем случай, когда ссылка указана вместе с текстом
+        if " " in args:
+            parts = args.split(" ", maxsplit=1)
+            custom_text = parts[0]
+            link = parts[1]
+        elif args:
+            # Если передано одно слово, считаем его ссылкой
+            link = args
             custom_text = self.default_text
         else:
-            if " " in args:
-                parts = args.split(" ", 1)
-                custom_text = parts[0]
-                link = parts[1]
-            else:
-                link = args
-                custom_text = self.default_text
-                
-        # Корректируем формирование HTML-ссылки
-        clickable_link = f'<a href="{link}">{custom_text}</a>'  # Обратите внимание на двойные кавычки вокруг атрибута href
+            # Если нет аргументов, берем ссылку по умолчанию
+            link = self.default_link
+            custom_text = self.default_text
         
-        # Формирование нового текста сообщения
+        # Генерация кликабельной ссылки
+        clickable_link = f'<a href="{link}">{custom_text}</a>'
+        
+        # Отправляем сообщение с разметкой
         if not original_text:
-            await message.edit(clickable_link, parse_mode="HTML")  # Обязательно укажите режим парсинга как HTML
+            await message.edit(clickable_link, parse_mode="HTML")
             return
         new_text = original_text + "\n" + clickable_link
-        await message.edit(new_text, parse_mode="HTML")  # Обязательно укажите режим парсинга как HTML
+        await message.edit(new_text, parse_mode="HTML")
