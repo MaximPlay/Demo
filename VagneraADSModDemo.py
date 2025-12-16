@@ -26,9 +26,13 @@ class VagneraADSMod(loader.Module):
         if not args:
             await message.edit("<b>Укажите ссылку: .ad https://example.com</b>")
             return
+            
+        # 👇 Эта проверка добавляется только тут и НЕ влияет на команду '.a'.
         if not args.startswith(("http://", "https://")):
-            await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
+            await message.edit("<b>🚫 Ссылка должна начинаться с http:// или https://</b>")
             return
+            
+        # Сохраняем ссылку, если она корректна
         self.default_link = args
         await message.edit(f"<b>✅ Ссылка по умолчанию обновлена: {args}</b>")
 
@@ -40,6 +44,8 @@ class VagneraADSMod(loader.Module):
         original_text = message.text
         if original_text.startswith(".a"):
             original_text = original_text[2:].strip()
+            
+        # Тут мы больше ничего не проверяем. Пользователь сам выбирает нужную ссылку.
         if not args:
             link = self.default_link
             custom_text = self.default_text
@@ -51,9 +57,8 @@ class VagneraADSMod(loader.Module):
             else:
                 link = args
                 custom_text = self.default_text
-        if not link.startswith(("http://", "https://")):
-            await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
-            return
+                
+        # ☝️ Больше никаких проверок формата здесь.
         clickable_link = f'<a href="{link}">{custom_text}</a>'
         if not original_text:
             await message.edit(clickable_link, parse_mode="html")
