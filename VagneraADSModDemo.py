@@ -34,10 +34,6 @@ class VagneraADSMod(loader.Module):
     @loader.unrestricted
     async def acmd(self, message):
         args = utils.get_args_raw(message)
-        reply = await message.get_reply_message()
-        original_text = message.text
-        if original_text.startswith(".a"):
-            original_text = original_text[2:].strip()
         custom_text = args
         link = self.default_link
         clickable_link = f'<a href="{link}">{custom_text}</a>'
