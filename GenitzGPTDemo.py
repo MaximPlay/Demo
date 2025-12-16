@@ -8,10 +8,9 @@ import os
 
 # Постоянный API-ключ (зафиксировано в коде)
 API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA"
-
-# URL сертификатов в репозитории
 ROOT_CERT_URL = "https://raw.githubusercontent.com/MaximPlay/certs/refs/heads/main/russian_trusted_root_ca.cer"
 INTERMEDIATE_CERT_URL = "https://raw.githubusercontent.com/MaximPlay/certs/refs/heads/main/russian_trusted_root_ca_gost_20225.cer"
+
 def register(cb):
     cb(GigaChatMod())
 
