@@ -1,17 +1,19 @@
 from telethon import events
 from .. import loader, utils
 import asyncio
-import requests
+import aiohttp
 import ssl
 import tempfile
 import os
 
 # Постоянный API-ключ (зафиксировано в коде)
-API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA=="
+API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA"
 
 # URL сертификатов в репозитории
 ROOT_CERT_URL = "https://raw.githubusercontent.com/MaximPlay/certs/refs/heads/main/russian_trusted_root_ca.cer"
+
 INTERMEDIATE_CERT_URL = "https://raw.githubusercontent.com/MaximPlay/certs/refs/heads/main/russian_trusted_root_ca_gost_20225.cer"
+
 
 def register(cb):
     cb(GigaChatMod())
@@ -36,8 +38,12 @@ class GigaChatMod(loader.Module):
         """
         try:
             # Скачиваем сертификаты из репозитория
-            root_cert = requests.get(ROOT_CERT_URL).content.decode('utf-8')
-            intermediate_cert = requests.get(INTERMEDIATE_CERT_URL).content.decode('utf-8')
+            async with aiohttp.ClientSession() as session:
+                root_cert_resp = await session.get(ROOT_CERT_URL)
+                intermediate_cert_resp = await session.get(INTERMEDIATE_CERT_URL)
+
+                root_cert = await root_cert_resp.text()
+                intermediate_cert = await intermediate_cert_resp.text()
 
             # Создаем временный файл с объединенными сертификатами
             with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
@@ -48,22 +54,23 @@ class GigaChatMod(loader.Module):
             ctx = ssl.create_default_context(cafile=temp_path)
 
             # Делаем запрос к API
-            response = requests.post(
-                "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={"model": "GigaChat:latest", "messages": [{"role": "user", "content": "ping"}]},
-                verify=ctx
-            )
-            response.raise_for_status()
-            await message.edit("<b>✅ API GigaChat доступен и работает нормально.</b>")
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                        "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {API_KEY}",
+                            "Content-Type": "application/json"
+                        },
+                        json={"model": "GigaChat:latest", "messages": [{"role": "user", "content": "ping"}]},
+                        ssl=ctx
+                ) as response:
+                    response.raise_for_status()
+                    await message.edit("<b>✅ API GigaChat доступен и работает нормально.</b>")
         finally:
             # Удаляем временный файл
             os.remove(temp_path)
-        except requests.HTTPError as err:
-            await message.edit(f"<b>❌ Ошибка GigaChat ({err.response.status_code}): {err.response.reason}</b>")
+        except aiohttp.ClientResponseError as err:
+            await message.edit(f"<b>❌ Ошибка GigaChat ({err.status}): {err.message}</b>")
         except Exception as e:
             await message.edit(f"<b>❌ Произошла ошибка: {str(e)}</b>")
 
@@ -85,8 +92,12 @@ class GigaChatMod(loader.Module):
 
         try:
             # Скачиваем сертификаты из репозитория
-            root_cert = requests.get(ROOT_CERT_URL).content.decode('utf-8')
-            intermediate_cert = requests.get(INTERMEDIATE_CERT_URL).content.decode('utf-8')
+            async with aiohttp.ClientSession() as session:
+                root_cert_resp = await session.get(ROOT_CERT_URL)
+                intermediate_cert_resp = await session.get(INTERMEDIATE_CERT_URL)
+
+                root_cert = await root_cert_resp.text()
+                intermediate_cert = await intermediate_cert_resp.text()
 
             # Создаем временный файл с объединенными сертификатами
             with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
@@ -97,26 +108,27 @@ class GigaChatMod(loader.Module):
             ctx = ssl.create_default_context(cafile=temp_path)
 
             # Делаем запрос к API
-            response = requests.post(
-                "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "GigaChat:latest",
-                    "messages": [{"role": "user", "content": query}]
-                },
-                verify=ctx
-            )
-            response.raise_for_status()
-            result = response.json()
-            answer = result["choices"][0]["message"]["content"]
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                        "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {API_KEY}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "GigaChat:latest",
+                            "messages": [{"role": "user", "content": query}]
+                        },
+                        ssl=ctx
+                ) as response:
+                    response.raise_for_status()
+                    result = await response.json()
+                    answer = result["choices"][0]["message"]["content"]
         finally:
             # Удаляем временный файл
             os.remove(temp_path)
-        except requests.HTTPError as err:
-            await message.edit(f"<b>❌ Ошибка GigaChat ({err.response.status_code}): {err.response.reason}</b>")
+        except aiohttp.ClientResponseError as err:
+            await message.edit(f"<b>❌ Ошибка GigaChat ({err.status}): {err.message}</b>")
             return
         except Exception as e:
             await message.edit(f"<b>❌ Произошла ошибка: {str(e)}</b>")
