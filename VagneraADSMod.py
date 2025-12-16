@@ -1,13 +1,9 @@
 from telethon import events
 
-def register(cb):
- cb(VagneraADSMod())
-
-
 DEFAULT_LINK = "https://example.com"
 DEFAULT_TEXT = "Нажми сюда"
 
-@client.on(events.NewMessage(pattern=r'^\.ad\s+(.+)####REPLACEMENT_CODE_0#####39;))
+@client.on(events.NewMessage(pattern=r'^\.ad\s+(.+)####REPLACEMENT_CODE_5#####39;))
 async def set_default_link(event):
     new_link = event.pattern_match.group(1).strip()
     if not new_link.startswith(('http://', 'https://')):
@@ -17,7 +13,7 @@ async def set_default_link(event):
     DEFAULT_LINK = new_link
     await event.reply(f"✅ Фиксированная ссылка обновлена: {DEFAULT_LINK}")
 
-@client.on(events.NewMessage(pattern=r'^\.a\s*(.*)####REPLACEMENT_CODE_0#####39;))
+@client.on(events.NewMessage(pattern=r'^\.a\s[/i](.*)####REPLACEMENT_CODE_5#####39;))
 async def add_link(event):
     args = event.pattern_match.group(1).strip()
     original_text = event.message.text.strip()
@@ -52,5 +48,4 @@ async def add_link(event):
     try:
         await event.edit(new_text, parse_mode='markdown')
     except:
-
         await event.reply(new_text, parse_mode='markdown')
