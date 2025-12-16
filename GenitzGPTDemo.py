@@ -13,7 +13,7 @@ class GigaChatMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        self.api_key = ""
+        self.api_key = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjQ2NDAwMTI4LTUxMTUtNDEyMi1hZjEzLWY4Njc1ODM0ZDhiYg=="
 
     async def client_ready(self, client, db):
         self.db = db
