@@ -6,21 +6,22 @@ import json
 API_URL = "https://api.gigachat.ai/v1/models/gigachat-general/inferences"
 
 def register(cb):
-    cb(GigaChatModule())  # Создаем экземпляр класса и передаем его в функцию обратного вызова
+    class_instance = GigaChatModule()
+    cb(class_instance)  # Вызываем функцию обратного вызова с экземпляром класса
 
 class GigaChatModule(loader.Module):
     strings = {"name": "GenitzGPT"}
 
     def __init__(self):
-        self.name = self.strings["name"]  # Имя модуля
-        self.me = None                   # Текущий пользователь
-        self.ratelimit = []              # Ограничение скорости запросов
-        self.api_key = None              # Хранилище API ключа
+        self.name = self.strings["name"]
+        self.me = None
+        self.ratelimit = []
+        self.api_key = None
 
     async def client_ready(self, client, db):
-        self.db = db                     # Доступ к базам данных
-        self.client = client             # Клиент Telegram
-        self.me = await client.get_me()  # Информация о текущем пользователе
+        self.db = db
+        self.client = client
+        self.me = await client.get_me()
 
     @loader.owner
     async def gptapicmd(self, message):
