@@ -13,13 +13,13 @@ class GigaChatMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        self.api_key = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjQ2NDAwMTI4LTUxMTUtNDEyMi1hZjEzLWY4Njc1ODM0ZDhiYg=="
+        self.api_key = ""  # Начальное значение пустое
 
     async def client_ready(self, client, db):
         self.db = db
         self.client = client
         self.me = await client.get_me()
-        self.api_key = self.db.get("GigaChat", "api_key", "")
+        self.api_key = self.db.get("GigaChat", "api_key", "")  # Читаем API ключ из базы данных
 
     @loader.unrestricted
     async def gptapicmd(self, message):
@@ -28,7 +28,7 @@ class GigaChatMod(loader.Module):
             await message.edit("<b>Укажите API-ключ: .gptapi ваш_ключ</b>")
             return
         self.api_key = args
-        self.db.set("GigaChat", "api_key", args)
+        self.db.set("GigaChat", "api_key", args)  # Сохраняем API ключ в базу данных
         await message.edit("<b>✅ API-ключ GigaChat сохранён</b>")
 
     @loader.unrestricted
@@ -59,7 +59,8 @@ class GigaChatMod(loader.Module):
                     "model": "GigaChat:latest",
                     "messages": [{"role": "user", "content": query}]
                 },
-                timeout=15
+                timeout=15,
+                verify=False  # ← Временно отключаем проверку сертификатов
             )
             response.raise_for_status()
             result = response.json()
