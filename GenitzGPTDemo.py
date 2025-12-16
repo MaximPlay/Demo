@@ -3,6 +3,9 @@ from .. import loader, utils
 import asyncio
 import requests
 
+# Зафиксируй API-ключ прямо в коде
+API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA=="
+
 def register(cb):
     cb(GigaChatMod())
 
@@ -13,35 +16,43 @@ class GigaChatMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        self.api_key = ""
 
     async def client_ready(self, client, db):
         self.db = db
         self.client = client
         self.me = await client.get_me()
-        self.api_key = self.db.get("GigaChat", "api_key", "")
 
     @loader.unrestricted
-    async def gptapicmd(self, message):
-        args = utils.get_args_raw(message)
-        if not args:
-            await message.edit("<b>Укажите API-ключ: .gptapi ваш_ключ</b>")
-            return
-        self.api_key = args
-        self.db.set("GigaChat", "api_key", args)
-        await message.edit("<b>✅ API-ключ GigaChat сохранён</b>")
+    async def gptcfgcmd(self, message):
+        """
+        Проверяет доступность API GigaChat.
+        """
+        try:
+            response = requests.post(
+                "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={"model": "GigaChat:latest", "messages": [{"role": "user", "content": "ping"}]}
+            )
+            response.raise_for_status()
+            await message.edit("<b>✅ API GigaChat доступен и работает нормально.</b>")
+        except requests.HTTPError as err:
+            await message.edit(f"<b>❌ Ошибка GigaChat ({err.response.status_code}): {err.response.reason}</b>")
+        except Exception as e:
+            await message.edit(f"<b>❌ Произошла ошибка: {str(e)}</b>")
 
     @loader.unrestricted
     async def gptcmd(self, message):
+        """
+        Основной запрос к GigaChat.
+        """
         args = utils.get_args_raw(message)
         reply = await message.get_reply_message()
 
         if not args and not reply:
             await message.edit("<b>Напишите запрос или ответьте на сообщение</b>")
-            return
-
-        if not self.api_key:
-            await message.edit("<b>❌ Не установлен API-ключ. Используйте .gptapi ваш_ключ</b>")
             return
 
         query = args if args else reply.text
@@ -52,7 +63,7 @@ class GigaChatMod(loader.Module):
             response = requests.post(
                 "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.api_key}",
+                    "Authorization": f"Bearer {API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
@@ -68,7 +79,7 @@ class GigaChatMod(loader.Module):
             await message.edit(f"<b>❌ Ошибка GigaChat ({err.response.status_code}): {err.response.reason}</b>")
             return
         except Exception as e:
-            await message.edit(f"<b>❌ Ошибка GigaChat: {str(e)}</b>")
+            await message.edit(f"<b>❌ Произошла ошибка: {str(e)}</b>")
             return
 
         result_text = f"<b>Запрос:</b> {query}\n\n<b>Ответ GigaChat:</b> {answer}"
