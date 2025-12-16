@@ -52,10 +52,12 @@ class VagneraADSMod(loader.Module):
         if not link.startswith(("http://", "https://")):
             await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
             return
-        clickable_link = f'<a href="{link}">{custom_text}</a>'
+   clickable_link = f'<a href="{link}">{custom_text}</a>'
 if not original_text:
     await message.edit(clickable_link, parse_mode="html")
     return
 new_text = original_text + "
 " + clickable_link
 await message.edit(new_text, parse_mode="html")
+
+
