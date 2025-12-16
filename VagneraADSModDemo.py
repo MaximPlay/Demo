@@ -1,72 +1,61 @@
 from telethon import events
 from .. import loader, utils
 
-import logging
-import datetime
-import time
-from telethon.sync import TelegramClient
+def register(cb):
+    cb(VagneraADSMod())
 
-client = TelegramClient('session_name', api_id, api_hash)
+class VagneraADSMod(loader.Module):
+    strings = {"name": "VagneraADS"}
 
-from telethon import types
+    def [b]init[/b](self):
+        self.name = self.strings["name"]
+        self.me = None
+        self.ratelimit = []
+        self.default_link = "https://example.com"
+        self.default_text = "Нажми сюда"
 
-logger = logging.getLogger(__name__)
+    async def client_ready(self, client, db):
+        self.db = db
+        self.client = client
+        self.me = await client.get_me()
 
-DEFAULT_LINK = "https://example.com"
-DEFAULT_TEXT = "Нажми сюда"
+    @loader.unrestricted
+    async def adcmd(self, message):
+        args = utils.get_args_raw(message)
+        if not args:
+            await message.edit("<b>Укажите ссылку: .ad https://example.com</b>")
+            return
+        if not args.startswith(("http://", "https://")):
+            await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
+            return
+        self.default_link = args
+        await message.edit(f"<b>✅ Ссылка по умолчанию обновлена: {args}</b>")
 
-# Обработчик команды изменения фиксированной ссылки (.ad)
-@client.on(events.NewMessage(pattern=r'^\.ad\s+(.*)$'))
-async def set_default_link(event):
-    new_link = event.pattern_match.group(1).strip()
-    # Проверяем валидность ссылки
-    if not new_link.startswith(('http://', 'https://')):
-        await event.reply("❌ Ссылка должна начинаться с http:// или https://")
-        return
-    # Обновляем глобальную переменную с дефолтной ссылкой
-    global DEFAULT_LINK
-    DEFAULT_LINK = new_link
-    await event.reply(f"✅ Фиксированная ссылка обновлена: {DEFAULT_LINK}")
-
-# Обработчик добавления кликабельной ссылки (.a)
-@client.on(events.NewMessage(pattern=r'^\.a\s*(.*)$'))
-async def add_link(event):
-    args = event.pattern_match.group(1).strip()  # Получаем аргументы команды
-    text = event.message.text.strip()  # Исходный текст сообщения
-    
-    # Если сообщение начинается с .a, очищаем команду
-    if text.startswith('.a'):
-        text = text[2:].strip()
-        
-    # Определяем ссылку и текст кнопки
-    if args:
-        if ' ' in args:
-            parts = args.split(maxsplit=1)
-            custom_text = parts[0]
-            link = parts[1]
+    @loader.unrestricted
+    async def acmd(self, message):
+        args = utils.get_args_raw(message)
+        reply = await message.get_reply_message()
+        original_text = message.text
+        if original_text.startswith(".a"):
+            original_text = original_text[2:].strip()
+        if not args:
+            link = self.default_link
+            custom_text = self.default_text
         else:
-            link = args
-            custom_text = DEFAULT_TEXT
-    else:
-        link = DEFAULT_LINK
-        custom_text = DEFAULT_TEXT
-    
-    # Проверяем валидность ссылки
-    if not link.startswith(('http://', 'https://')):
-        await event.reply("❌ Ссылка должна начинаться с http:// или https://")
-        return
-    
-    # Формируем кликабельную ссылку
-    clickable_link = f"[{custom_text}]({link})"
-    
-    # Редактируем исходное сообщение или отправляем новое
-    if not text:
-        await event.reply(clickable_link, parse_mode='markdown')
-    else:
-        new_text = text + "\n\n" + clickable_link
-        try:
-            await event.edit(new_text, parse_mode='markdown')
-        except Exception as e:
-            print(e)
-            await event.reply(new_text, parse_mode='markdown')
-
+            if " " in args:
+                parts = args.split(" ", 1)
+                custom_text = parts[0]
+                link = parts[1]
+            else:
+                link = args
+                custom_text = self.default_text
+        if not link.startswith(("http://", "https://")):
+            await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
+            return
+        clickable_link = f'<a href="{link}">{custom_text}</a>'
+if not original_text:
+    await message.edit(clickable_link, parse_mode="html")
+    return
+new_text = original_text + "
+" + clickable_link
+await message.edit(new_text, parse_mode="html")
