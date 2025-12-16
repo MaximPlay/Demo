@@ -9,8 +9,7 @@ import os
 API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA=="
 
 # Путь к объединенному сертификату (указывайте абсолютный или относительный путь)
-COMBINED_CERT_PATH = '/home/itsgenitz/friendly-telegram/friendly-telegram
-/certif.pem'  # Замените на фактический путь к объединенному сертификату
+COMBINED_CERT_PATH = './certif.pem'  # Замените на фактический путь к объединенному сертификату
 
 def register(cb):
     cb(GigaChatMod())
