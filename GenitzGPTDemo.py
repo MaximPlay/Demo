@@ -9,7 +9,7 @@ def register(cb):
 class GigaChatMod(loader.Module):
     strings = {"name": "GigaChat"}
 
-    def b]init[/b:
+    def __init__(self):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
@@ -25,7 +25,7 @@ class GigaChatMod(loader.Module):
     async def gptapicmd(self, message):
         args = utils.get_args_raw(message)
         if not args:
-            await message.edit("<b>Укажите API-ключ: .gptapi твой_ключ</b>")
+            await message.edit("<b>Укажите API-ключ: .gptapi ваш_ключ</b>")
             return
         self.api_key = args
         self.db.set("GigaChat", "api_key", args)
@@ -68,7 +68,5 @@ class GigaChatMod(loader.Module):
             await message.edit(f"<b>❌ Ошибка GigaChat: {str(e)}</b>")
             return
 
-        result_text = f"<b>Запрос:</b> {query}
-
-<b>Ответ GigaChat:</b> {answer}"
+        result_text = f"<b>Запрос:</b> {query}\n\n<b>Ответ GigaChat:</b> {answer}"
         await message.edit(result_text, parse_mode="HTML")
