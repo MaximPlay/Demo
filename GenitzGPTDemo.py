@@ -2,9 +2,14 @@ from telethon import events
 from .. import loader, utils
 import asyncio
 import requests
+import ssl
+import os
 
-# Зафиксируй API-ключ прямо в коде
+# Постоянный API-ключ (зафиксировано в коде)
 API_KEY = "MDE5YjI2MGMtYmFlMS03YjJjLTkzMDktMmZhMWUwZTE5NjAzOjFiZjBlODEwLTU0YWMtNDg3Ni05NWI2LTllNjEyYWU1OTc3NA=="
+
+# Путь к объединенному сертификату (указывайте абсолютный или относительный путь)
+COMBINED_CERT_PATH = 'certif.pem'  # Замените на фактический путь к объединенному сертификату
 
 def register(cb):
     cb(GigaChatMod())
@@ -28,13 +33,15 @@ class GigaChatMod(loader.Module):
         Проверяет доступность API GigaChat.
         """
         try:
+            ctx = ssl.create_default_context(cafile=COMBINED_CERT_PATH)  # Используем объединенный сертификат
             response = requests.post(
                 "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {API_KEY}",
                     "Content-Type": "application/json"
                 },
-                json={"model": "GigaChat:latest", "messages": [{"role": "user", "content": "ping"}]}
+                json={"model": "GigaChat:latest", "messages": [{"role": "user", "content": "ping"}]},
+                verify=ctx  # Используем наш SSL контекст
             )
             response.raise_for_status()
             await message.edit("<b>✅ API GigaChat доступен и работает нормально.</b>")
@@ -60,6 +67,7 @@ class GigaChatMod(loader.Module):
         await message.edit("<b>Выполняется by GenitzGPT...</b>")
 
         try:
+            ctx = ssl.create_default_context(cafile=COMBINED_CERT_PATH)  # Используем объединенный сертификат
             response = requests.post(
                 "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
                 headers={
@@ -70,7 +78,7 @@ class GigaChatMod(loader.Module):
                     "model": "GigaChat:latest",
                     "messages": [{"role": "user", "content": query}]
                 },
-                timeout=15
+                verify=ctx  # Используем наш SSL контекст
             )
             response.raise_for_status()
             result = response.json()
