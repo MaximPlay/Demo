@@ -13,13 +13,13 @@ class GigaChatMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        self.api_key = ""  # Начальное значение пустое
+        self.api_key = ""
 
     async def client_ready(self, client, db):
         self.db = db
         self.client = client
         self.me = await client.get_me()
-        self.api_key = self.db.get("GigaChat", "api_key", "")  # Читаем API ключ из базы данных
+        self.api_key = self.db.get("GigaChat", "api_key", "")
 
     @loader.unrestricted
     async def gptapicmd(self, message):
@@ -28,7 +28,7 @@ class GigaChatMod(loader.Module):
             await message.edit("<b>Укажите API-ключ: .gptapi ваш_ключ</b>")
             return
         self.api_key = args
-        self.db.set("GigaChat", "api_key", args)  # Сохраняем API ключ в базу данных
+        self.db.set("GigaChat", "api_key", args)
         await message.edit("<b>✅ API-ключ GigaChat сохранён</b>")
 
     @loader.unrestricted
@@ -59,12 +59,14 @@ class GigaChatMod(loader.Module):
                     "model": "GigaChat:latest",
                     "messages": [{"role": "user", "content": query}]
                 },
-                timeout=15,
-                verify=False  # ← Временно отключаем проверку сертификатов
+                timeout=15
             )
             response.raise_for_status()
             result = response.json()
             answer = result["choices"][0]["message"]["content"]
+        except requests.HTTPError as err:
+            await message.edit(f"<b>❌ Ошибка GigaChat ({err.response.status_code}): {err.response.reason}</b>")
+            return
         except Exception as e:
             await message.edit(f"<b>❌ Ошибка GigaChat: {str(e)}</b>")
             return
