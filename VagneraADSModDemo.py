@@ -27,12 +27,12 @@ class VagneraADSMod(loader.Module):
             await message.edit("<b>Укажите ссылку: .ad https://example.com</b>")
             return
             
-        # 👇 Эта проверка добавляется только тут и НЕ влияет на команду '.a'.
+        # Проверка корректности ссылки только при установке по умолчанию
         if not args.startswith(("http://", "https://")):
             await message.edit("<b>🚫 Ссылка должна начинаться с http:// или https://</b>")
             return
             
-        # Сохраняем ссылку, если она корректна
+        # Устанавливаем ссылку по умолчанию
         self.default_link = args
         await message.edit(f"<b>✅ Ссылка по умолчанию обновлена: {args}</b>")
 
@@ -45,7 +45,7 @@ class VagneraADSMod(loader.Module):
         if original_text.startswith(".a"):
             original_text = original_text[2:].strip()
             
-        # Тут мы больше ничего не проверяем. Пользователь сам выбирает нужную ссылку.
+        # Используем ссылку по умолчанию, если пользователь не указал свою
         if not args:
             link = self.default_link
             custom_text = self.default_text
@@ -58,10 +58,12 @@ class VagneraADSMod(loader.Module):
                 link = args
                 custom_text = self.default_text
                 
-        # ☝️ Больше никаких проверок формата здесь.
-        clickable_link = f'<a href="{link}">{custom_text}</a>'
+        # Корректируем формирование HTML-ссылки
+        clickable_link = f'<a href="{link}">{custom_text}</a>'  # Обратите внимание на двойные кавычки вокруг атрибута href
+        
+        # Формирование нового текста сообщения
         if not original_text:
-            await message.edit(clickable_link, parse_mode="html")
+            await message.edit(clickable_link, parse_mode="HTML")  # Обязательно укажите режим парсинга как HTML
             return
         new_text = original_text + "\n" + clickable_link
-        await message.edit(new_text, parse_mode="html")
+        await message.edit(new_text, parse_mode="HTML")  # Обязательно укажите режим парсинга как HTML
