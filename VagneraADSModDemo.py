@@ -7,7 +7,7 @@ def register(cb):
 class VagneraADSMod(loader.Module):
     strings = {"name": "VagneraADS"}
 
-    def [b]init[/b](self):
+    def __init__(self):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
@@ -21,6 +21,7 @@ class VagneraADSMod(loader.Module):
 
     @loader.unrestricted
     async def adcmd(self, message):
+        """Установить новую ссылку по умолчанию"""
         args = utils.get_args_raw(message)
         if not args:
             await message.edit("<b>Укажите ссылку: .ad https://example.com</b>")
@@ -33,6 +34,7 @@ class VagneraADSMod(loader.Module):
 
     @loader.unrestricted
     async def acmd(self, message):
+        """Создать кликабельную ссылку"""
         args = utils.get_args_raw(message)
         reply = await message.get_reply_message()
         original_text = message.text
@@ -52,12 +54,9 @@ class VagneraADSMod(loader.Module):
         if not link.startswith(("http://", "https://")):
             await message.edit("<b>Ссылка должна начинаться с http:// или https://</b>")
             return
-   clickable_link = f'<a href="{link}">{custom_text}</a>'
-if not original_text:
-    await message.edit(clickable_link, parse_mode="html")
-    return
-new_text = original_text + "
-" + clickable_link
-await message.edit(new_text, parse_mode="html")
-
-
+        clickable_link = f'<a href="{link}">{custom_text}</a>'
+        if not original_text:
+            await message.edit(clickable_link, parse_mode="html")
+            return
+        new_text = original_text + "\n" + clickable_link
+        await message.edit(new_text, parse_mode="html")
