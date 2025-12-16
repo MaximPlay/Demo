@@ -4,11 +4,6 @@ def register(cb):
  cb(VagneraADSMod())
 
 
-class VagneraADSMod(loader.Module):
-    """VagneraADS By Genitz"""
-
-    strings = {'name': 'VagneraADS'}
-
 DEFAULT_LINK = "https://example.com"
 DEFAULT_TEXT = "Нажми сюда"
 
@@ -57,4 +52,5 @@ async def add_link(event):
     try:
         await event.edit(new_text, parse_mode='markdown')
     except:
+
         await event.reply(new_text, parse_mode='markdown')
