@@ -6,8 +6,7 @@ import json
 API_URL = "https://api.gigachat.ai/v1/models/gigachat-general/inferences"
 
 def register(cb):
-    class_instance = GigaChatModule()
-    cb(class_instance)  # Вызываем функцию обратного вызова с экземпляром класса
+    cb(GigaChatModule())
 
 class GigaChatModule(loader.Module):
     strings = {"name": "GenitzGPT"}
