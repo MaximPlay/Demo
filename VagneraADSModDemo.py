@@ -1,4 +1,16 @@
 from telethon import events
+from .. import loader, utils
+
+import logging
+import datetime
+import time
+from telethon.sync import TelegramClient
+
+client = TelegramClient('session_name', api_id, api_hash)
+
+from telethon import types
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_LINK = "https://example.com"
 DEFAULT_TEXT = "Нажми сюда"
@@ -57,3 +69,4 @@ async def add_link(event):
         except Exception as e:
             print(e)
             await event.reply(new_text, parse_mode='markdown')
+
