@@ -38,31 +38,23 @@ class VagneraADSMod(loader.Module):
 
     @loader.unrestricted
     async def acmd(self, message):
-        """Создать кликабельную ссылку"""
+        """Создать кликабельную ссылку с указанным текстом"""
         args = utils.get_args_raw(message)
         reply = await message.get_reply_message()
         original_text = message.text
         if original_text.startswith(".a"):
             original_text = original_text[2:].strip()
             
-        # Обрабатываем случай, когда ссылка указана вместе с текстом
-        if " " in args:
-            parts = args.split(" ", maxsplit=1)
-            custom_text = parts[0]
-            link = parts[1]
-        elif args:
-            # Если передано одно слово, считаем его ссылкой
-            link = args
-            custom_text = self.default_text
-        else:
-            # Если нет аргументов, берем ссылку по умолчанию
-            link = self.default_link
-            custom_text = self.default_text
+        # Аргумент команды .a должен стать текстом ссылки
+        custom_text = args
         
-        # Генерация кликабельной ссылки
+        # Использовать заранее заданную ссылку по умолчанию
+        link = self.default_link
+        
+        # Генерируем HTML-ссылку
         clickable_link = f'<a href="{link}">{custom_text}</a>'
         
-        # Отправляем сообщение с разметкой
+        # Если изначально не было текста, показываем только ссылку
         if not original_text:
             await message.edit(clickable_link, parse_mode="HTML")
             return
