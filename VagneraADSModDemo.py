@@ -11,7 +11,8 @@ class VagneraADSMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        self.default_link = "https://example.com"
+        # Добавляем поддержку ссылок формата @username
+        self.default_link = "@rmcfnew3"
         self.default_text = "Нажми сюда"
 
     async def client_ready(self, client, db):
@@ -21,20 +22,25 @@ class VagneraADSMod(loader.Module):
 
     @loader.unrestricted
     async def adcmd(self, message):
+        """Обновляет стандартную ссылку"""
         args = utils.get_args_raw(message)
         if not args:
-            await message.edit("<b>Укажите ссылку: .ad https://example.com</b>")
+            await message.edit("<b>Укажите ссылку: .ad @rmcfnew3</b>")
             return
-        if not args.startswith(("http://", "https://")):
-            await message.edit("<b>🚫 Ссылка должна начинаться с http:// или https://</b>")
+        
+        # Проверяем, начинается ли ссылка с символа '@'
+        if not args.startswith("@"):
+            await message.edit("<b>🚫 Ссылка должна начинаться с символа @</b>")
             return
+            
         self.default_link = args
-        await message.edit(f"<b>✅ Ссылка по умолчанию обновлена: {args}</b>")
+        await message.edit(f"<b>✅ Стандартная ссылка обновлена: {args}</b>")
 
     @loader.unrestricted
     async def acmd(self, message):
+        """Создает кликабельную ссылку с заданным текстом"""
         args = utils.get_args_raw(message)
-        custom_text = args
+        custom_text = args or self.default_text
         link = self.default_link
-        clickable_link = f'<a href="{link}">{custom_text}</a>'
+        clickable_link = f'<a href="tg://resolve?domain={link}">{custom_text}</a>'
         await message.edit(clickable_link, parse_mode="HTML")
