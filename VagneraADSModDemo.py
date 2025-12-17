@@ -11,8 +11,8 @@ class VagneraADSMod(loader.Module):
         self.name = self.strings["name"]
         self.me = None
         self.ratelimit = []
-        # Добавляем поддержку ссылок формата @username
-        self.default_link = "@rmcfnew3"
+        # Поддерживаем оба типа ссылок: HTTP(S) и @username
+        self.default_link = ""
         self.default_text = "Нажми сюда"
 
     async def client_ready(self, client, db):
@@ -25,15 +25,19 @@ class VagneraADSMod(loader.Module):
         """Обновляет стандартную ссылку"""
         args = utils.get_args_raw(message)
         if not args:
-            await message.edit("<b>Укажите ссылку: .ad @rmcfnew3</b>")
+            await message.edit("<b>Укажите ссылку: .ad https://example.com или .ad @username</b>")
+            return
+    
+        # Определяем тип ссылки: HTTP(S) или @username
+        if args.startswith("http://") or args.startswith("https://"):
+            self.default_link = args
+        elif args.startswith("@"):
+            # Убираем символ '@' перед сохранением
+            self.default_link = args.lstrip('@')
+        else:
+            await message.edit("<b>🚫 Неправильный формат ссылки. Используйте либо HTTP(S), либо @username.</b>")
             return
         
-        # Проверяем, начинается ли ссылка с символа '@'
-        if not args.startswith("@"):
-            await message.edit("<b>🚫 Ссылка должна начинаться с символа @</b>")
-            return
-            
-        self.default_link = args
         await message.edit(f"<b>✅ Стандартная ссылка обновлена: {args}</b>")
 
     @loader.unrestricted
@@ -42,5 +46,12 @@ class VagneraADSMod(loader.Module):
         args = utils.get_args_raw(message)
         custom_text = args or self.default_text
         link = self.default_link
-        clickable_link = f'<a href="tg://resolve?domain={link}">{custom_text}</a>'
+    
+        # Формируем ссылку в зависимости от её типа
+        if link.startswith("http://") or link.startswith("https://"):
+            clickable_link = f'<a href="{link}">{custom_text}</a>'
+        else:
+            # Если это username, используем tg://resolve
+            clickable_link = f'<a href="tg://resolve?domain={link}">{custom_text}</a>'
+        
         await message.edit(clickable_link, parse_mode="HTML")
