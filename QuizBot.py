@@ -76,3 +76,24 @@ class QuizBotMod(loader.Module):
         chat_id = event.chat_id
         del self.quizzes[chat_id]
         await event.respond(self.strings["finish_poll"])
+
+    # Регистрация обработчиков событий
+    async def watcher(self, event):
+        if isinstance(event, CallbackQuery):  # Только события с callback-кнопками
+            await self.quiz_callback_handler(event)
+        elif isinstance(event, NewMessage):
+            if event.raw_text.startswith('/'):
+                command = event.raw_text.lower()
+                if command == '/quiz':
+                    await self.quiz_start_cmd(event)
+                elif command == '/results':
+                    await self.quiz_results_cmd(event)
+                elif command == '/finish':
+                    await self.finish_quiz_cmd(event)
+            else:
+                chat_id = event.chat_id
+                if chat_id in self.quizzes:
+                    if 'question' not in self.quizzes[chat_id]:
+                        await self.quiz_question_handler(event)
+                    elif 'options' not in self.quizzes[chat_id]:
+                        await self.quiz_options_handler(event)
