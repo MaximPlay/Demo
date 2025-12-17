@@ -1,5 +1,4 @@
 from telethon import events
-from telethon.tl.functions.messages import DeleteHistoryRequest
 from telethon.errors import FloodWaitError
 import asyncio
 from .. import loader, utils
@@ -14,12 +13,11 @@ class FulldelMod(loader.Module):
         "name": "FullDel",
         "processing": "<b>🚀 Инициирую процедуру полного удаления...</b>",
         "deleting_self": "<b>🗑 Удаляю мои сообщения: {current}</b>",
-        "deleting_other": "<b>🗑 Удаляю сообщения собеседника: {current}</b>",
-        "completed": "<b>✅ Процедура завершена. Удалено {self_count} моих и {other_count} чужих сообщений.</b>",
-        "farewell": "Сессия диалога завершена. Все пользовательские данные были удалены в соответствии с протоколом 451. Система возвращается в режим ожидания новых команд. Доступ к историческим данным более невозможен.",
+        "completed": "<b>✅ Процедура завершена. Удалено {self_count} моих сообщений.</b>",
+        "farewell": "Сессия диалога завершена. Все ваши сообщения были удалены в соответствии с протоколом 451. Система ожидает новые команды. Доступ к вашим старым сообщениям теперь закрыт.",
         "not_private": "<b>❌ Команда работает только в личных сообщениях</b>",
         "no_messages": "<b>📭 В этом диалоге нет сообщений для удаления</b>",
-        "stopped": "<b>⏹ Процесс удаления остановлен. Удалено {self_count} моих и {other_count} чужих сообщений.</b>",
+        "stopped": "<b>⏹ Процесс удаления остановлен. Удалено {self_count} моих сообщений.</b>",
         "nothing_to_stop": "<b>ℹ️ Нет активного процесса удаления для остановки</b>",
         "stopping": "<b>🛑 Останавливаю процесс удаления...</b>"
     }
@@ -29,8 +27,7 @@ class FulldelMod(loader.Module):
         self.is_deleting = False  # Флаг активного процесса удаления
         self.stop_requested = False  # Флаг запроса на остановку
         self.current_dialog = None  # Текущий диалог
-        self.total_self = 0  # Счетчик своих сообщений
-        self.total_other = 0  # Счетчик чужих сообщений
+        self.total_self = 0  # Счётчик своих сообщений
 
     async def client_ready(self, client, db):
         self.db = db
@@ -39,7 +36,7 @@ class FulldelMod(loader.Module):
 
     @loader.unrestricted
     async def fulldelcmd(self, message):
-        """Удалить все сообщения в текущем диалоге (свои и собеседника)"""
+        """Удалить все свои сообщения в текущем диалоге"""
         # Проверяем, не запущен ли уже процесс
         if self.is_deleting:
             await message.edit("<b>⚠️ Процесс удаления уже запущен. Используйте .stopdel для остановки</b>")
@@ -55,12 +52,11 @@ class FulldelMod(loader.Module):
         dialog = await message.get_chat()
         self.current_dialog = dialog.id
         self.total_self = 0
-        self.total_other = 0
         self.is_deleting = True
         self.stop_requested = False
         
         try:
-            # Удаляем сообщения пользователя (свои)
+            # Удаляем свои сообщения
             await message.edit(self.strings["deleting_self"].format(current=0))
             
             async for msg in self.client.iter_messages(dialog, from_user=self.me):
@@ -78,7 +74,7 @@ class FulldelMod(loader.Module):
                             current=self.total_self
                         ))
                     
-                    # Задержка для избежания флуда
+                    # Задержка для предотвращения флуд-вэйта
                     await asyncio.sleep(0.2)
                     
                 except FloodWaitError as e:
@@ -89,56 +85,20 @@ class FulldelMod(loader.Module):
                 except Exception:
                     pass
             
-            # Если не было запроса на остановку, продолжаем удаление сообщений собеседника
-            if not self.stop_requested:
-                # Удаляем сообщения собеседника
-                await message.edit(self.strings["deleting_other"].format(current=0))
-                
-                # Получаем ID собеседника
-                other_user_id = dialog.id
-                
-                async for msg in self.client.iter_messages(dialog, from_user=other_user_id):
-                    # Проверяем запрос на остановку
-                    if self.stop_requested:
-                        break
-                    
-                    try:
-                        await msg.delete()
-                        self.total_other += 1
-                        
-                        # Обновляем статус каждые 5 сообщений
-                        if self.total_other % 5 == 0:
-                            await message.edit(self.strings["deleting_other"].format(
-                                current=self.total_other
-                            ))
-                        
-                        # Задержка для избежания флуда
-                        await asyncio.sleep(0.2)
-                        
-                    except FloodWaitError as e:
-                        if self.stop_requested:
-                            break
-                        await message.edit(f"<b>⏳ Ожидание {e.seconds} секунд из-за ограничений Telegram...</b>")
-                        await asyncio.sleep(e.seconds)
-                    except Exception:
-                        pass
-            
             # Проверяем, были ли вообще сообщения
-            if self.total_self == 0 and self.total_other == 0 and not self.stop_requested:
+            if self.total_self == 0 and not self.stop_requested:
                 await message.edit(self.strings["no_messages"])
                 self._reset_flags()
                 return
             
-            # Отправляем соответствующий отчет
+            # Отправляем отчёт
             if self.stop_requested:
                 await message.edit(self.strings["stopped"].format(
-                    self_count=self.total_self,
-                    other_count=self.total_other
+                    self_count=self.total_self
                 ))
             else:
                 await message.edit(self.strings["completed"].format(
-                    self_count=self.total_self,
-                    other_count=self.total_other
+                    self_count=self.total_self
                 ))
                 
                 # Отправляем прощальное сообщение
@@ -161,20 +121,19 @@ class FulldelMod(loader.Module):
         await message.edit(self.strings["stopping"])
         self.stop_requested = True
         
-        # Ждем завершения текущей операции
+        # Ждём завершение текущей операции
         await asyncio.sleep(1)
         
-        # Если процесс еще не завершился, отправляем финальный статус
+        # Если процесс ещё активен, выводим итоговый статус
         if self.is_deleting:
             await message.edit(self.strings["stopped"].format(
-                self_count=self.total_self,
-                other_count=self.total_other
+                self_count=self.total_self
             ))
             self._reset_flags()
 
     def _reset_flags(self):
-        """Сброс флагов и счетчиков"""
+        """Сброс флагов и счётчика"""
         self.is_deleting = False
         self.stop_requested = False
         self.current_dialog = None
-        # Не сбрасываем счетчики, они могут быть полезны для отчета
+        self.total_self = 0
