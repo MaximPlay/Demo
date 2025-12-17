@@ -24,7 +24,7 @@ class FulldelMod(loader.Module):
         "stopping": "<b>🛑 Останавливаю процесс удаления...</b>"
     }
 
-    def init(self):
+    def __init__(self):
         self.name = self.strings["name"]
         self.is_deleting = False  # Флаг активного процесса удаления
         self.stop_requested = False  # Флаг запроса на остановку
@@ -47,7 +47,7 @@ class FulldelMod(loader.Module):
         
         await message.edit(self.strings["processing"])
         
-        # Проверяем, что это личный диалог
+        # Проверяем, что это частный чат
         if not message.is_private:
             await message.edit(self.strings["not_private"])
             return
@@ -86,9 +86,8 @@ class FulldelMod(loader.Module):
                         break
                     await message.edit(f"<b>⏳ Ожидание {e.seconds} секунд из-за ограничений Telegram...</b>")
                     await asyncio.sleep(e.seconds)
-                    
-except Exception:
-                    continue
+                except Exception:
+                    pass
             
             # Если не было запроса на остановку, продолжаем удаление сообщений собеседника
             if not self.stop_requested:
@@ -122,7 +121,7 @@ except Exception:
                         await message.edit(f"<b>⏳ Ожидание {e.seconds} секунд из-за ограничений Telegram...</b>")
                         await asyncio.sleep(e.seconds)
                     except Exception:
-                        continue
+                        pass
             
             # Проверяем, были ли вообще сообщения
             if self.total_self == 0 and self.total_other == 0 and not self.stop_requested:
