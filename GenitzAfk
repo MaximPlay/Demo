@@ -1,19 +1,3 @@
-#    Friendly Telegram (telegram userbot)
-#    Copyright (C) 2018-2019 The Authors
-
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 from .. import loader, utils
 
 import logging
@@ -22,70 +6,89 @@ import time
 
 from telethon import types
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(name)
 
 
 @loader.tds
 class AFKMod(loader.Module):
     """Provides a message saying that you are unavailable"""
     strings = {"name": "VagneraAFK",
-               "gone": "<b>Я ушел спать…</b>",
-               "back": "<b>Я проснулся</b>",
-               "afk": "<b>Я сейчас сплю братишка, я афк (since {} ago).</b>",
-               "afk_reason": "<b>Я сейчас сплю братишка, я афк (since {} ago).\nReason:</b> <i>{}</i>"}
+               "gone": "<b>AFK Mode: ON</b>",
+               "back": "<b>AFK Mode: OFF</b>",
+               "afk": "<b>Отвечу как только появлюсь в сети.</b>",
+               "afk_reason": "<b>Я Отвечу как только появлюсь в сети.\nПричина:</b> <i>{}</i>"}
 
     async def client_ready(self, client, db):
         self._db = db
         self._me = await client.get_me()
 
     async def afkcmd(self, message):
-        """.afk [message]"""
+        """.afk [сообщение]"""
         if utils.get_args_raw(message):
-            self._db.set(__name__, "afk", utils.get_args_raw(message))
+            self._db.set(name, "afk", utils.get_args_raw(message))
         else:
-            self._db.set(__name__, "afk", True)
-        self._db.set(__name__, "gone", time.time())
-        self._db.set(__name__, "ratelimit", [])
+            self._db.set(name, "afk", True)
+        self._db.set(name, "gone", time.time())
+        self._db.set(name, "ratelimit", [])
         await self.allmodules.log("afk", data=utils.get_args_raw(message) or None)
-        await utils.answer(message, self.strings("gone", message))
+        await utils.answer(message, self.strings("gone"))
 
     async def unafkcmd(self, message):
-        """Remove the AFK status"""
-        self._db.set(__name__, "afk", False)
-        self._db.set(__name__, "gone", None)
-        self._db.set(__name__, "ratelimit", [])
+        """Удаляет статус AFK"""
+        self._db.set(name, "afk", False)
+        self._db.set(name, "gone", None)
+        self._db.set(name, "ratelimit", [])
         await self.allmodules.log("unafk")
-        await utils.answer(message, self.strings("back", message))
+        await utils.answer(message, self.strings("back"))
 
     async def watcher(self, message):
+        # Проверяем, является ли сообщение упоминанием или направлено лично нам
         if not isinstance(message, types.Message):
             return
+        
         if message.mentioned or getattr(message.to_id, "user_id", None) == self._me.id:
             afk_state = self.get_afk()
+            
+            # Если режим AFK выключен, ничего не делаем
             if not afk_state:
                 return
-            logger.debug("tagged!")
-            ratelimit = self._db.get(__name__, "ratelimit", [])
-            if utils.get_chat_id(message) in ratelimit:
+                
+            # Логируем событие уведомления
+            logger.debug("Меня упомянули!")
+            
+            # Ограничиваем частоту отправки сообщений
+            ratelimit = self._db.get(name, "ratelimit", [])
+            chat_id = utils.get_chat_id(message)
+            
+            # Проверяем, не было ли недавно другого уведомления в этом чате
+            if chat_id in ratelimit:
                 return
             else:
-                self._db.setdefault(__name__, {}).setdefault("ratelimit", []).append(utils.get_chat_id(message))
+                # Добавляем чат в список ограниченных
+                self._db.setdefault(name, {}).setdefault("ratelimit", []).append(chat_id)
                 self._db.save()
+            
+            # Получаем информацию о пользователе
             user = await utils.get_user(message)
+            
+            # Игнорируем себя, ботов и верифицированных пользователей
             if user.is_self or user.bot or user.verified:
-                logger.debug("User is self, bot or verified.")
+                logger.debug("Пользователь сам, бот или верифицирован.")
                 return
-            if self.get_afk() is False:
-                return
+            
+            # Определяем продолжительность нахождения в режиме AFK
             now = datetime.datetime.now().replace(microsecond=0)
-            gone = datetime.datetime.fromtimestamp(self._db.get(__name__, "gone")).replace(microsecond=0)
-            diff = now - gone
+            gone_time = datetime.datetime.fromtimestamp(self._db.get(name, "gone")).replace(microsecond=0)
+            diff = now - gone_time
+            
+            # Формируем ответное сообщение
             if afk_state is True:
-                ret = self.strings("afk", message).format(diff)
+                response = self.strings("afk").format(diff)
             elif afk_state is not False:
-                ret = self.strings("afk_reason", message).format(diff, afk_state)
-            await utils.answer(message, ret, reply_to=message)
+                response = self.strings("afk_reason").format(diff, afk_state)
+            
+            # Отправляем уведомление о нахождении в режиме AFK
+            await utils.answer(message, response, reply_to=message)
 
     def get_afk(self):
-        return self._db.get(__name__, "afk", False)
-
+        return self._db.get(name, "afk", False)
