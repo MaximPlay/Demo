@@ -1,7 +1,6 @@
-from telethon import events
+from telethon import events, types
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.tl.functions.messages import GetFullChatRequest
-from telethon.utils import is_group, is_channel
 from .. import loader, utils
 
 def register(cb):
@@ -17,22 +16,22 @@ class ExtendedChatInfoMod(loader.Module):
         """Показать подробную информацию о текущем чате."""
         chat = await message.get_chat()
         chat_full = None
-        if isinstance(chat, (events.NewMessage.Event)):
-            if is_group(chat):
+        if isinstance(chat, events.NewMessage.Event):
+            if isinstance(chat, types.Chat):
                 chat_full = await self.client(GetFullChatRequest(chat.id))
-            elif is_channel(chat):
+            elif isinstance(chat, types.Channel):
                 chat_full = await self.client(GetFullChannelRequest(chat.id))
 
         info_list = [
             f"<b>🔍 Информация о чате:</b>\n\n",
             f"- <b>ID чата:</b> {message.chat_id}",
             f"- <b>Название:</b> {getattr(chat, 'title', 'нет')}",
-            f"- <b>Тип:</b> {'Группа' if is_group(chat) else ('Канал' if is_channel(chat) else 'Частный чат')} ",
+            f"- <b>Тип:</b> {'Группа' if isinstance(chat, types.Chat) else ('Канал' if isinstance(chat, types.Channel) else 'Частный чат')} ",
             f"- <b>Участники:</b> {getattr(chat_full.full_chat, 'participants_count', 'не известно')}" if chat_full else "- Участники: не известны",
             f"- <b>Описание:</b> {getattr(chat_full.full_chat, 'about', '')}" if chat_full else "",
             f"- <b>Создан:</b> {getattr(chat, 'date', '-')}",
             f"- <b>Последнее изменение:</b> {getattr(chat, 'edit_date', '-')}",
-            f"- <b>Открытый доступ:</b> {'Да' if getattr(chat, 'public', False) else 'Нет'}",
+            f"- <b>Открытый доступ:</b> {'Да' если getattr(chat, 'public', False) else 'Нет'}",
             f"- <b>Приглашающая ссылка:</b> {getattr(chat_full.full_chat, 'invite', 'нет')}" if chat_full else ""
         ]
 
