@@ -22,6 +22,8 @@ class ExtendedChatInfoMod(loader.Module):
             elif isinstance(chat, types.Channel):
                 chat_full = await self.client(GetFullChannelRequest(chat.id))
 
+        open_access = 'Да' if getattr(chat, 'public', False) else 'Нет'
+
         info_list = [
             f"<b>🔍 Информация о чате:</b>\n\n",
             f"- <b>ID чата:</b> {message.chat_id}",
@@ -31,7 +33,7 @@ class ExtendedChatInfoMod(loader.Module):
             f"- <b>Описание:</b> {getattr(chat_full.full_chat, 'about', '')}" if chat_full else "",
             f"- <b>Создан:</b> {getattr(chat, 'date', '-')}",
             f"- <b>Последнее изменение:</b> {getattr(chat, 'edit_date', '-')}",
-            f"- <b>Открытый доступ:</b> {'Да' если getattr(chat, 'public', False) else 'Нет'}",
+            f"- <b>Открытый доступ:</b> {open_access}",
             f"- <b>Приглашающая ссылка:</b> {getattr(chat_full.full_chat, 'invite', 'нет')}" if chat_full else ""
         ]
 
