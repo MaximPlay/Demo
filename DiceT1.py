@@ -1,5 +1,6 @@
+import random
 from telethon import events
-from random import randint
+from random import randint, choice
 from .. import loader, utils
 
 def register(cb):
