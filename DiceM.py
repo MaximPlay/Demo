@@ -3,12 +3,12 @@ from random import randint
 from .. import loader, utils
 
 def register(cb):
-    cb(Кубик())
+    cb(DiceModule())
 
 class DiceModule(loader.Module):
     """Кинь кубик епта (.dice [результат])"""
     
-    strings = {"name": "Dice"}
+    strings = {"name": "Кубик"}
 
     @loader.unrestricted
     async def dicecmd(self, message):
