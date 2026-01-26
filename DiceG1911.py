@@ -2,9 +2,8 @@ from telethon import events
 from random import randint
 from .. import loader, utils
 
-def register(cb):
-    cb(DiceModule)
-
+# Правильно регистрируем модуль через специальный метод allmodules
+@loader.tds
 class DiceModule(loader.Module):
     """Модуль для броска игральной кости"""
     strings = {"name": "Dice"}
