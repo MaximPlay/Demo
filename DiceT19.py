@@ -1,10 +1,6 @@
-import random
 from telethon import events
-from random import randint, choice
+from random import randint
 from .. import loader, utils
-
-def register(cb):
-    cb(DiceModule())
 
 class DiceModule(loader.Module):
     """Модуль для броска игральной кости"""
@@ -25,3 +21,15 @@ class DiceModule(loader.Module):
         
         await self.client.send_dice(message.to_id, emoji='🎲', value=value)
         await message.delete()
+
+__version__ = "1.0.0"
+__author__ = "Genitz"
+
+async def on_load(client):
+    print("Модуль Dice успешно загружен.")
+
+async def config_complete():
+    global __version__, __author__
+    __module__ = "dice"
+    __version__ = "1.0.0"
+    __author__ = "Genitz"
