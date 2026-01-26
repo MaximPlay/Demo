@@ -2,7 +2,7 @@ from telethon import events
 from random import randint
 from .. import loader, utils
 
-# Правильно регистрируем модуль через специальный метод allmodules
+# Импортируем декоратор для автоматической регистрации модуля
 @loader.tds
 class DiceModule(loader.Module):
     """Модуль для броска игральной кости"""
