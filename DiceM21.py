@@ -14,10 +14,8 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import asyncio
 import logging
-
-from telethon.tl.types import InputMediaDice
+from random import randint
 
 from .. import loader, utils, security
 
@@ -26,62 +24,53 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class DiceMod(loader.Module):
-    """Dice"""
+    """Бросок игровых костей"""
     strings = {"name": "Dice"}
 
     def __init__(self):
-        self.config = loader.ModuleConfig("POSSIBLE_VALUES", {"": [1, 2, 3, 4, 5, 6],
-                                                              "🎲": [1, 2, 3, 4, 5, 6],
-                                                              "🎯": [1, 2, 3, 4, 5, 6],
-                                                              "🏀": [1, 2, 3, 4, 5]},
-                                          "Mapping of emoji to possible values")
+        self.config = loader.ModuleConfig(
+            "POSSIBLE_VALUES", 
+            {
+                "🎲": [1, 2, 3, 4, 5, 6],
+                "🎯": [1, 2, 3, 4, 5, 6],
+                "🏀": [1, 2, 3, 4, 5]
+            },
+            "Доступные значения для разных эмодзи"
+        )
 
     @loader.unrestricted
     async def dicecmd(self, message):
-        """Rolls a die (optionally with the specified value)
-           .dice <emoji> <outcomes> <count>"""
+        """Бросить кости.
+           Использование: .dice [эмодзи] [значение]
+           Пример: .dice 🎲 5"""
         args = utils.get_args(message)
-        if await self.allmodules.check_security(message, security.OWNER | security.SUDO):
-            try:
-                emoji = args[0]
-            except IndexError:
-                emoji = "🎲"
-            possible = self.config["POSSIBLE_VALUES"].get(emoji, None)
-            if possible is None:
-                emoji = "🎲"
-                possible = self.config["POSSIBLE_VALUES"][emoji]
-            values = set()
-            try:
-                for val in args[1].split(","):
-                    value = int(val)
-                    if value in possible:
-                        values.add(value)
-            except (ValueError, IndexError):
-                values.clear()
-            try:
-                count = int(args[2])
-            except (ValueError, IndexError):
-                count = 1
-            rolled = -1
-            done = 0
-            chat = message.to_id
-            client = message.client
-            while True:
-                task = client.send_message(chat, file=InputMediaDice(emoji))
-                if message:
-                    message = (await asyncio.gather(message.delete(), task))[1]
-                else:
-                    message = await task
-                rolled = message.media.value
-                logger.debug("Rolled %d", rolled)
-                if rolled in values or not values:
-                    done += 1
-                    message = None
-                    if done == count:
-                        break
+        
+        # Определяем эмодзи
+        if args and args[0] in ["🎲", "🎯", "🏀"]:
+            emoji = args[0]
+            args = args[1:]  # Убираем эмодзи из аргументов
         else:
-            try:
-                emoji = args[0]
-            except IndexError:
-                emoji = "🎲"
-            await message.reply(file=InputMediaDice(emoji))
+            emoji = "🎲"
+        
+        # Получаем возможные значения для эмодзи
+        possible_values = self.config["POSSIBLE_VALUES"].get(emoji, [1, 2, 3, 4, 5, 6])
+        
+        # Определяем значение
+        if args and args[0].isdigit():
+            value = int(args[0])
+            if value not in possible_values:
+                await utils.answer(message, 
+                    f'<b>❌ Некорректное значение! Для {emoji} допустимы: {", ".join(map(str, possible_values))}</b>')
+                return
+        else:
+            value = randint(1, 6)
+            # Корректируем значение если оно не подходит для эмодзи
+            if value not in possible_values:
+                value = possible_values[randint(0, len(possible_values) - 1)]
+        
+        try:
+            # Отправляем кубик с нужным значением
+            await self.client.send_dice(message.to_id, emoji=emoji, value=value)
+            await message.delete()
+        except Exception as e:
+            await utils.answer(message, f'<b>❌ Ошибка: {str(e)}</b>')
